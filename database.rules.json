@@ -1,0 +1,16 @@
+{
+  "rules": {
+    "users": {
+      ".indexOn": ["username", "email", "owner"],
+      "$k": {
+        ".read":  "!$k.matches(/^(user_|staff-)/)",
+        ".write": "!$k.matches(/^(user_|staff-)/)"
+      }
+    },
+    "billing":  { ".read": false, ".write": false },
+    "payments": { ".read": false, ".write": false },
+    "backups":  { ".read": false, ".write": false },
+    "dbmap":    { ".read": true,  ".write": false },
+    "$other":   { ".read": true,  ".write": true }
+  }
+}
