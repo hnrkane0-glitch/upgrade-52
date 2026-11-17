@@ -82,7 +82,7 @@ module.exports = async (req,res) => {
     const provider=clean(body.provider,30).toLowerCase();
     const cfg=PROVIDERS[provider];
     if(!cfg) return out(res,400,{ok:false,error:'Choose a supported AI provider.'});
-    if(provider==='custom' && (!cfg.url || !/^https:\\/\\//i.test(cfg.url))) return out(res,503,{ok:false,error:'Set CUSTOM_AI_BASE_URL to a valid HTTPS chat-completions endpoint in Vercel.'});
+    if(provider==='custom' && (!cfg.url || !String(cfg.url).startsWith('https://'))) return out(res,503,{ok:false,error:'Set CUSTOM_AI_BASE_URL to a valid HTTPS chat-completions endpoint in Vercel.'});
     const key=process.env[cfg.env];
     if(!key) return out(res,503,{ok:false,error:cfg.label+' is not configured. Add '+cfg.env+' in Vercel Environment Variables and redeploy.'});
     const message=String(body.message||'').trim().slice(0,12000);
