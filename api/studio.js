@@ -5,7 +5,8 @@ const { MAIN, enc, fbGet, fbPut, verifyTok, tokenOf, jbody } = require('./_qc');
 const out = (res, code, body) => res.status(code).json(body);
 // Store Studio records beneath the existing Firebase-locked backups root.
 // Do NOT move this to a new root path until the broad public $other rule is removed.
-// Server-side access requires FIREBASE_DB_SECRET via api/_fbauth.js.\nconst ROOT = MAIN + '/backups/platform_studio';
+// Server-side access requires FIREBASE_DB_SECRET via api/_fbauth.js.
+const ROOT = MAIN + '/backups/platform_studio';
 const now = () => new Date().toISOString();
 const id = () => Date.now().toString(36) + '-' + require('crypto').randomBytes(5).toString('hex');
 const clean = (v, max = 160) => String(v == null ? '' : v).trim().slice(0, max);
