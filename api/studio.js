@@ -13,8 +13,17 @@ async function audit(actor, action, detail) {
   await fbPut(ROOT + '/audit/' + key, { actor, action, detail: clean(detail, 500), at: now() });
 }
 async function readMap(path) {
-  const v = await fbGet(ROOT + '/' + path);
-  return v && typeof v === 'object' ? v : {};
+  // Do not disguise Firebase permission/configuration failures as an empty workspace.
+  const response = await fetch(ROOT + '/' + path + '.json');
+  if (!response.ok) {
+    const error = new Error(response.status === 401 || response.status === 403
+      ? 'Firebase denied Studio access. Configure FIREBASE_DB_SECRET in Vercel, then redeploy.'
+      : 'Could not read Studio data from Firebase (' + response.status + ').');
+    error.code = 'STUDIO_DB_ACCESS';
+    throw error;
+  }
+  const value = await response.json();
+  return value && typeof value === 'object' ? value : {};
 }
 
 module.exports = async (req, res) => {
@@ -99,6 +108,6 @@ module.exports = async (req, res) => {
     return out(res, 400, { ok: false, error: 'Unknown Studio action.' });
   } catch (error) {
     console.error('[studio]', error);
-    return out(res, 500, { ok: false, error: error.code === 'NO_ENC_KEY' ? error.message : 'Studio could not complete that request.' });
+    return out(res, error.code === 'STUDIO_DB_ACCESS' ? 503 : 500, { ok: false, error: ['NO_ENC_KEY', 'STUDIO_DB_ACCESS'].includes(error.code) ? error.message : 'Studio could not complete that request.' });
   }
 };
