@@ -87,6 +87,7 @@ var ROUTES = {
   '/pricing'      : 'landing.html',
   '/features'     : 'landing.html',
   '/dashboard'    : 'admin.html',
+  '/backend'      : 'backend.html',
   '/admin'        : 'admin.html',
   '/store-editor' : 'admin.html',
   '/store'        : 'store.html',
@@ -103,7 +104,7 @@ var ROUTES = {
 };
 
 // Protected routes (require login)
-var PROTECTED = ['/dashboard','/admin','/store-editor','/pos','/point-of-sale','/page-editor','/editor','/store-builder','/builder'];
+var PROTECTED = ['/backend','/dashboard','/admin','/store-editor','/pos','/point-of-sale','/page-editor','/editor','/store-builder','/builder'];
 
 // ─── CUSTOM DOMAIN SUPPORT ────────────────────────────────────────
 // If this site is opened on a store owner's own domain (not the platform),
@@ -221,7 +222,12 @@ function navigate(path, pushState){
   // Strip trailing slash unless root
   if(path !== '/' && path.endsWith('/')) path = path.slice(0,-1);
   if(CUSTOM_STORE && MARKETING.indexOf(path) > -1) path = '/store';
-  // Auth guard
+  // Auth guard — Backend Studio is reserved for the platform admin account.
+  if(path==='/backend' && String(localStorage.getItem('qc_logged_user')||'').toLowerCase()!=='admin'){
+    if(pushState !== false) safeReplaceState({path:'/'}, '', '/');
+    loadPage('/', 'landing.html', 'login');
+    return;
+  }
   if(PROTECTED.indexOf(path) > -1 && !isLoggedIn()){
     if(pushState !== false) safeReplaceState({path:'/'}, '', '/');
     loadPage('/', 'landing.html', 'login');
