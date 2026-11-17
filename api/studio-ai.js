@@ -14,7 +14,13 @@ const PROVIDERS = {
   openrouter: { label:'OpenRouter', env:'OPENROUTER_API_KEY', modelEnv:'OPENROUTER_MODEL', model:'openai/gpt-4.1-mini', kind:'openai', url:'https://openrouter.ai/api/v1/chat/completions' },
   groq: { label:'Groq', env:'GROQ_API_KEY', modelEnv:'GROQ_MODEL', model:'llama-3.3-70b-versatile', kind:'openai', url:'https://api.groq.com/openai/v1/chat/completions' },
   deepseek: { label:'DeepSeek', env:'DEEPSEEK_API_KEY', modelEnv:'DEEPSEEK_MODEL', model:'deepseek-chat', kind:'openai', url:'https://api.deepseek.com/chat/completions' },
-  xai: { label:'xAI Grok', env:'XAI_API_KEY', modelEnv:'XAI_MODEL', model:'grok-3-mini', kind:'openai', url:'https://api.x.ai/v1/chat/completions' }
+  xai: { label:'xAI Grok', env:'XAI_API_KEY', modelEnv:'XAI_MODEL', model:'grok-3-mini', kind:'openai', url:'https://api.x.ai/v1/chat/completions' },
+  mistral: { label:'Mistral', env:'MISTRAL_API_KEY', modelEnv:'MISTRAL_MODEL', model:'mistral-small-latest', kind:'openai', url:'https://api.mistral.ai/v1/chat/completions' },
+  together: { label:'Together AI', env:'TOGETHER_API_KEY', modelEnv:'TOGETHER_MODEL', model:'meta-llama/Llama-3.3-70B-Instruct-Turbo', kind:'openai', url:'https://api.together.xyz/v1/chat/completions' },
+  fireworks: { label:'Fireworks AI', env:'FIREWORKS_API_KEY', modelEnv:'FIREWORKS_MODEL', model:'accounts/fireworks/models/llama-v3p3-70b-instruct', kind:'openai', url:'https://api.fireworks.ai/inference/v1/chat/completions' },
+  cerebras: { label:'Cerebras', env:'CEREBRAS_API_KEY', modelEnv:'CEREBRAS_MODEL', model:'llama-3.3-70b', kind:'openai', url:'https://api.cerebras.ai/v1/chat/completions' },
+  perplexity: { label:'Perplexity', env:'PERPLEXITY_API_KEY', modelEnv:'PERPLEXITY_MODEL', model:'sonar-pro', kind:'openai', url:'https://api.perplexity.ai/chat/completions' },
+  custom: { label:'Custom OpenAI-compatible API', env:'CUSTOM_AI_API_KEY', modelEnv:'CUSTOM_AI_MODEL', model:'', kind:'openai', url:process.env.CUSTOM_AI_BASE_URL || '' }
 };
 
 const SYSTEM = `You are QuickCart's private Backend Studio engineering assistant. Help the platform owner plan, understand, review and implement changes to their existing ecommerce, storefront, inventory and POS platform.
@@ -76,6 +82,7 @@ module.exports = async (req,res) => {
     const provider=clean(body.provider,30).toLowerCase();
     const cfg=PROVIDERS[provider];
     if(!cfg) return out(res,400,{ok:false,error:'Choose a supported AI provider.'});
+    if(provider==='custom' && (!cfg.url || !/^https:\\/\\//i.test(cfg.url))) return out(res,503,{ok:false,error:'Set CUSTOM_AI_BASE_URL to a valid HTTPS chat-completions endpoint in Vercel.'});
     const key=process.env[cfg.env];
     if(!key) return out(res,503,{ok:false,error:cfg.label+' is not configured. Add '+cfg.env+' in Vercel Environment Variables and redeploy.'});
     const message=String(body.message||'').trim().slice(0,12000);
