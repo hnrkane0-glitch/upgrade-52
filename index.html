@@ -222,7 +222,12 @@ function navigate(path, pushState){
   // Strip trailing slash unless root
   if(path !== '/' && path.endsWith('/')) path = path.slice(0,-1);
   if(CUSTOM_STORE && MARKETING.indexOf(path) > -1) path = '/store';
-  // Auth guard
+  // Auth guard — Backend Studio is reserved for the platform admin account.
+  if(path==='/backend' && String(localStorage.getItem('qc_logged_user')||'').toLowerCase()!=='admin'){
+    if(pushState !== false) safeReplaceState({path:'/'}, '', '/');
+    loadPage('/', 'landing.html', 'login');
+    return;
+  }
   if(PROTECTED.indexOf(path) > -1 && !isLoggedIn()){
     if(pushState !== false) safeReplaceState({path:'/'}, '', '/');
     loadPage('/', 'landing.html', 'login');
